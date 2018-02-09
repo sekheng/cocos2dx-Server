@@ -2,6 +2,7 @@
 
 # Import the Flask Framework
 from flask import Flask, render_template, request, url_for, redirect
+from google.appengine.ext import ndb
 app = Flask(__name__)
 # Note: We don't need to call run() since our application is embedded within
 # the App Engine WSGI application server.
@@ -10,6 +11,7 @@ import json
 import os
 import string
 import logging
+from MyModel import *
 
 # set the secret key.  keep this really secret:
 app.secret_key = os.urandom(24)
@@ -23,11 +25,26 @@ def hello():
 
 @app.route('/store_score', methods=['POST'])
 def store_score():
-    return "Successful sotring of highscore"
+    dataDictionary = request.get_json()
+    logging.info(dataDictionary)
+    createdHighScore = None
+    if 'score' in dataDictionary:
+        createdHighScore = HighScore.CreateHighscore(dataDictionary.get('score'), 'anonymous')
+        createdHighScore.put()
+    if 'name' in dataDictionary:
+        createdHighScore.mName = dataDictionary.get('name')
+        createdHighScore.put()
+    return json.dumps(createdHighScore.to_dict())
 
 @app.route('/get_topscore/<int:_limit_scores>',methods=['GET'])
 def get_topscores(_limit_scores):
     response_dict = []
+    highscrDB = HighScore.query(HighScore.isDeleted == False).order(-HighScore.mScore)
+    #fetch this number of highscores!
+    listOfHighScore = highscrDB.fetch(_limit_scores)
+    for playerScore in listOfHighScore:
+        playerScoreDict = { 'score' : playerScore.mScore }
+        response_dict.append(playerScoreDict)
     return json.dumps(response_dict)
 
 @app.route('/logo', methods=['GET'])
