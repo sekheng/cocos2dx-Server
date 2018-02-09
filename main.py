@@ -25,7 +25,11 @@ def hello():
 
 @app.route('/store_score', methods=['POST'])
 def store_score():
+    logging.info(request.headers)
     dataDictionary = request.get_json()
+    if dataDictionary is None:
+        logging.info("request data: " + request.data)
+        dataDictionary = json.loads(request.data)
     logging.info(dataDictionary)
     createdHighScore = None
     if 'score' in dataDictionary:
