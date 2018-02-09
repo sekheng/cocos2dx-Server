@@ -47,7 +47,7 @@ def get_topscores(_limit_scores):
     #fetch this number of highscores!
     listOfHighScore = highscrDB.fetch(_limit_scores)
     for playerScore in listOfHighScore:
-        playerScoreDict = { 'score' : playerScore.mScore }
+        playerScoreDict = { 'score' : playerScore.mScore, 'name' : playerScore.mName }
         response_dict.append(playerScoreDict)
     return json.dumps(response_dict)
 
